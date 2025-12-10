@@ -1,5 +1,7 @@
 package event
 
+//go:generate mockgen -source=store.go -destination=../../internal/mocks/mock_event_adapter.go -package=mocks
+
 import (
 	"context"
 	"fmt"
