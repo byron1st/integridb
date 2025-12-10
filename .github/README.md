@@ -6,8 +6,9 @@ The `lint.yml` workflow runs on every pull request targeting the `main` branch a
 
 ### Lint Job
 - **go vet**: Examines Go source code and reports suspicious constructs
-- **golangci-lint**: Runs multiple linters with default configuration
+- **golangci-lint** (v2.x): Runs multiple linters with default configuration
 - **staticcheck**: Advanced static analysis for Go code
+- **modernize**: Suggests modern Go idioms and improvements
 
 ### Test Job
 - Runs all tests with race detector enabled
@@ -43,6 +44,10 @@ golangci-lint run
 # Run staticcheck (requires installation)
 go install honnef.co/go/tools/cmd/staticcheck@latest
 staticcheck ./...
+
+# Run modernize (requires installation)
+go install github.com/Crocmagnon/go-modernize/cmd/modernize@latest
+modernize ./...
 ```
 
 ## Installing Tools
@@ -61,4 +66,10 @@ go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
 ```bash
 go install honnef.co/go/tools/cmd/staticcheck@latest
+```
+
+### modernize
+
+```bash
+go install github.com/Crocmagnon/go-modernize/cmd/modernize@latest
 ```

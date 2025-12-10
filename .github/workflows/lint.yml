@@ -35,7 +35,7 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v4
         with:
-          version: latest
+          version: v2.0.0
           args: --timeout=5m
 
       - name: Install staticcheck
@@ -43,6 +43,12 @@ jobs:
 
       - name: Run staticcheck
         run: staticcheck ./...
+
+      - name: Install modernize
+        run: go install github.com/Crocmagnon/go-modernize/cmd/modernize@latest
+
+      - name: Run modernize
+        run: modernize ./...
 
   test:
     name: Run Tests
