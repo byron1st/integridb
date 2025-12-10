@@ -1,0 +1,63 @@
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+
+  govet:
+    enable-all: true
+
+  gofmt:
+    simplify: true
+
+  goimports:
+    local-prefixes: github.com/byron1st/integridb
+
+  revive:
+    confidence: 0.8
+
+  staticcheck:
+    checks: ["all"]
+
+  unused:
+    check-exported: false
+
+linters:
+  enable:
+    - errcheck      # Check for unchecked errors
+    - gosimple      # Simplify code
+    - govet         # Vet examines Go source code
+    - ineffassign   # Detect ineffectual assignments
+    - staticcheck   # Advanced static analysis
+    - typecheck     # Type-check code
+    - unused        # Check for unused code
+    - gofmt         # Check code formatting
+    - goimports     # Check import formatting
+    - revive        # Fast, configurable, extensible linter
+    - misspell      # Check for misspelled English words
+    - unconvert     # Remove unnecessary type conversions
+    - goconst       # Find repeated strings that could be constants
+    - gocyclo       # Check cyclomatic complexity
+    - dupl          # Check for code duplication
+    - gosec         # Security-focused linter
+    - exportloopref # Check for loop variable capture
+
+  disable:
+    - exhaustive    # Can be too strict for enums
+    - exhauststruct # Too strict for struct initialization
+
+run:
+  timeout: 5m
+  tests: true
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+  # Exclude some linters from running on tests
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - dupl
+        - gosec
+        - goconst
