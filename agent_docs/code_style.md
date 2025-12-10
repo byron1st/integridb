@@ -7,6 +7,17 @@
 - Prefer explicit error handling over panic
 - Prefer the Go standard library over 3rd party libraries
 
+# Error Handling Patterns
+
+## Deferred Cleanup with Error Returns
+
+When using `defer` for cleanup operations that return errors (e.g., `Close()`, `Rollback()`), explicitly ignore the error to satisfy `errcheck` linter.
+
+```go
+defer func() { _ = rows.Close() }()
+defer func() { _ = tx.Rollback() }()
+```
+
 # Linting and Formatting
 
 ```bash
@@ -23,7 +34,7 @@ When verifying changes:
 ## Always
 
 1. Verify code formatting: `gofmt -d .` (should have no output)
-2. Modernize code: `modernize -fix ./...`
+2. Modernize code: `go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -fix ./...`
 3. Run a linter: `golangci-lint run`
 4. Run some tests related to changed code: `go test`
 

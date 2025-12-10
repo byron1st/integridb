@@ -49,6 +49,10 @@ When writing code or tests for this project:
 - **Code Style**: Follow Go conventions and project standards - see [agent_docs/code_style.md](agent_docs/code_style.md)
 - **Testing**: Write comprehensive unit and integration tests - see [agent_docs/test_style.md](agent_docs/test_style.md)
 
+### Pre-Commit Verification Workflow
+
+**CRITICAL**: Before committing any code changes, you MUST complete ALL verification steps from [agent_docs/code_style.md](agent_docs/code_style.md#verification--validation).
+
 ## 1.5 Core Concepts
 
 | Concept | Description |
