@@ -6,7 +6,7 @@ The `lint.yml` workflow runs on every pull request targeting the `main` branch a
 
 ### Lint Job
 - **go vet**: Examines Go source code and reports suspicious constructs
-- **golangci-lint**: Runs multiple linters configured in `.golangci.yml`
+- **golangci-lint**: Runs multiple linters with default configuration
 - **staticcheck**: Advanced static analysis for Go code
 
 ### Test Job
