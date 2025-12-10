@@ -45,7 +45,7 @@ jobs:
         run: staticcheck ./...
 
       - name: Install modernize
-        run: go install github.com/Crocmagnon/go-modernize/cmd/modernize@latest
+        run: go install golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest
 
       - name: Run modernize
         run: modernize ./...

@@ -46,7 +46,7 @@ go install honnef.co/go/tools/cmd/staticcheck@latest
 staticcheck ./...
 
 # Run modernize (requires installation)
-go install github.com/Crocmagnon/go-modernize/cmd/modernize@latest
+go install golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest
 modernize ./...
 ```
 
@@ -71,5 +71,5 @@ go install honnef.co/go/tools/cmd/staticcheck@latest
 ### modernize
 
 ```bash
-go install github.com/Crocmagnon/go-modernize/cmd/modernize@latest
+go install golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest
 ```
