@@ -30,7 +30,7 @@ type Tx struct {
 // Exec executes a query without returning any rows.
 // For tracked tables, mutations are captured as events and buffered until Commit.
 // For Stage 1, this is a pass-through to the underlying transaction.
-func (t *Tx) Exec(query string, args ...interface{}) (sql.Result, error) {
+func (t *Tx) Exec(query string, args ...any) (sql.Result, error) {
 	// TODO: Stage 3 will add event capture here
 	return t.tx.Exec(query, args...)
 }
@@ -38,30 +38,30 @@ func (t *Tx) Exec(query string, args ...interface{}) (sql.Result, error) {
 // ExecContext executes a query without returning any rows, with context support.
 // For tracked tables, mutations are captured as events and buffered until Commit.
 // For Stage 1, this is a pass-through to the underlying transaction.
-func (t *Tx) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
+func (t *Tx) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
 	// TODO: Stage 3 will add event capture here
 	return t.tx.ExecContext(ctx, query, args...)
 }
 
 // Query executes a query that returns rows.
 // SELECT queries are passed through directly to the underlying transaction.
-func (t *Tx) Query(query string, args ...interface{}) (*sql.Rows, error) {
+func (t *Tx) Query(query string, args ...any) (*sql.Rows, error) {
 	return t.tx.Query(query, args...)
 }
 
 // QueryContext executes a query that returns rows, with context support.
 // SELECT queries are passed through directly to the underlying transaction.
-func (t *Tx) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
+func (t *Tx) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
 	return t.tx.QueryContext(ctx, query, args...)
 }
 
 // QueryRow executes a query that is expected to return at most one row.
-func (t *Tx) QueryRow(query string, args ...interface{}) *sql.Row {
+func (t *Tx) QueryRow(query string, args ...any) *sql.Row {
 	return t.tx.QueryRow(query, args...)
 }
 
 // QueryRowContext executes a query that is expected to return at most one row, with context support.
-func (t *Tx) QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
+func (t *Tx) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
 	return t.tx.QueryRowContext(ctx, query, args...)
 }
 

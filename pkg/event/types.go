@@ -41,7 +41,7 @@ type Event struct {
 	Payload EventPayload `json:"payload"`
 
 	// Metadata contains user-defined metadata (e.g., user_id, request_id).
-	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	Metadata map[string]any `json:"metadata,omitempty"`
 
 	// Checksum is the SHA-256 hash of this event's content.
 	Checksum string `json:"checksum"`
@@ -58,11 +58,11 @@ type Event struct {
 type EventPayload struct {
 	// Before contains the row state before the mutation.
 	// Nil for INSERT operations.
-	Before map[string]interface{} `json:"before,omitempty"`
+	Before map[string]any `json:"before,omitempty"`
 
 	// After contains the row state after the mutation.
 	// Nil for DELETE operations.
-	After map[string]interface{} `json:"after,omitempty"`
+	After map[string]any `json:"after,omitempty"`
 
 	// ChangedColumns lists the columns modified in an UPDATE operation.
 	// Empty for INSERT and DELETE operations.

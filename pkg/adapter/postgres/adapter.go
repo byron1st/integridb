@@ -211,7 +211,7 @@ func (a *PostgresAdapter) GetEventByID(ctx context.Context, eventID string) (*ev
 
 // scanEvent is a helper interface for scanning both sql.Row and sql.Rows.
 type scanner interface {
-	Scan(dest ...interface{}) error
+	Scan(dest ...any) error
 }
 
 // scanEvent scans a database row into an Event struct.

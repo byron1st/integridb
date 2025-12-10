@@ -69,7 +69,7 @@ type IntegrityError struct {
 	Message string `json:"message"`
 
 	// Details contains additional context (optional).
-	Details map[string]interface{} `json:"details,omitempty"`
+	Details map[string]any `json:"details,omitempty"`
 }
 
 // AddError adds an integrity error to the report.

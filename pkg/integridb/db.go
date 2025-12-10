@@ -96,37 +96,37 @@ func (d *DB) Close() error {
 // Exec executes a query without returning any rows.
 // For tracked tables, this will capture INSERT/UPDATE/DELETE operations as events.
 // For Stage 1, this is a pass-through to the underlying database.
-func (d *DB) Exec(query string, args ...interface{}) (sql.Result, error) {
+func (d *DB) Exec(query string, args ...any) (sql.Result, error) {
 	return d.db.Exec(query, args...)
 }
 
 // ExecContext executes a query without returning any rows, with context support.
 // For tracked tables, this will capture INSERT/UPDATE/DELETE operations as events.
 // For Stage 1, this is a pass-through to the underlying database.
-func (d *DB) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
+func (d *DB) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
 	// TODO: Stage 2 will add SQL parsing and event capture here
 	return d.db.ExecContext(ctx, query, args...)
 }
 
 // Query executes a query that returns rows.
 // SELECT queries are passed through directly to the underlying database.
-func (d *DB) Query(query string, args ...interface{}) (*sql.Rows, error) {
+func (d *DB) Query(query string, args ...any) (*sql.Rows, error) {
 	return d.db.Query(query, args...)
 }
 
 // QueryContext executes a query that returns rows, with context support.
 // SELECT queries are passed through directly to the underlying database.
-func (d *DB) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
+func (d *DB) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
 	return d.db.QueryContext(ctx, query, args...)
 }
 
 // QueryRow executes a query that is expected to return at most one row.
-func (d *DB) QueryRow(query string, args ...interface{}) *sql.Row {
+func (d *DB) QueryRow(query string, args ...any) *sql.Row {
 	return d.db.QueryRow(query, args...)
 }
 
 // QueryRowContext executes a query that is expected to return at most one row, with context support.
-func (d *DB) QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
+func (d *DB) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
 	return d.db.QueryRowContext(ctx, query, args...)
 }
 

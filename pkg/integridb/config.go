@@ -35,7 +35,7 @@ type Config struct {
 
 	// MetadataFunc is an optional function that extracts metadata from the context.
 	// This allows injecting user-defined metadata (e.g., user_id, request_id) into events.
-	MetadataFunc func(ctx context.Context) map[string]interface{}
+	MetadataFunc func(ctx context.Context) map[string]any
 }
 
 // TableConfig defines configuration for a tracked table.
