@@ -30,7 +30,7 @@ func (a *PostgresAdapter) Migrate(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("begin migration transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	// Execute migration SQL statements
 	for _, sql := range MigrationSQL() {
@@ -115,7 +115,7 @@ func (a *PostgresAdapter) GetEvents(ctx context.Context, tableName, rowID string
 	if err != nil {
 		return nil, fmt.Errorf("query events: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var events []*event.Event
 	for rows.Next() {
@@ -170,7 +170,7 @@ func (a *PostgresAdapter) GetEventsByTable(ctx context.Context, tableName string
 	if err != nil {
 		return nil, fmt.Errorf("query events: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var events []*event.Event
 	for rows.Next() {
