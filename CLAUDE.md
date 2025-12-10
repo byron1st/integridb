@@ -53,6 +53,51 @@ When writing code or tests for this project:
 
 **CRITICAL**: Before committing any code changes, you MUST complete ALL verification steps from [agent_docs/code_style.md](agent_docs/code_style.md#verification--validation).
 
+### Makefile Targets
+
+This project uses a Makefile to provide consistent commands for common development tasks. **Always use these Makefile targets instead of running commands directly.**
+
+| Target | Command | When to Use |
+|--------|---------|-------------|
+| `make mockgen` | Generate mocks for all interfaces | Before running tests, after modifying interfaces, or when mocks are out of sync |
+| `make test` | Run all tests | Quick validation during development, fast feedback loop |
+| `make test-race` | Run tests with race detector | Check for race conditions, slower than regular tests |
+| `make test-coverage` | Run tests with coverage report | Check test coverage, see which code is tested |
+| `make test-ci` | Run tests with race detector and coverage | CI/CD pipeline, comprehensive testing before commits |
+| `make lint` | Run all linters (gofmt, go vet, golangci-lint) | Verify code quality and style compliance |
+| `make fmt` | Format all Go code | Fix formatting issues before committing |
+| `make clean` | Remove generated files (mocks, coverage) | Clean workspace, troubleshoot build issues |
+| `make help` | Show available targets | List all available Makefile commands |
+
+**Usage Examples:**
+
+```bash
+# Before running tests (generate mocks first)
+make mockgen
+make test
+
+# Before committing (full verification)
+make mockgen
+make fmt
+make lint
+make test-ci
+
+# Quick development cycle
+make mockgen && make test
+
+# Clean and rebuild everything
+make clean
+make mockgen
+make test
+```
+
+**Important Notes:**
+
+- **Always run `make mockgen` before tests** if you've modified any interfaces or if tests fail with "undefined" mock errors
+- **Use `make test-ci` before committing** to ensure all checks pass (includes race detector and coverage)
+- **The GitHub Actions CI workflow uses these same targets** for consistency between local and CI environments
+- **Generated mocks are in `internal/mocks/`** and should be committed to the repository
+
 ## 1.5 Core Concepts
 
 | Concept | Description |
