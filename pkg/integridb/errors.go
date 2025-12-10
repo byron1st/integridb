@@ -59,4 +59,3 @@ func (e ErrInvalidConfig) Error() string {
 	}
 	return fmt.Sprintf("invalid config field %q: %s", e.Field, e.Reason)
 }
-

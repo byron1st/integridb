@@ -49,6 +49,58 @@ When writing code or tests for this project:
 - **Code Style**: Follow Go conventions and project standards - see [agent_docs/code_style.md](agent_docs/code_style.md)
 - **Testing**: Write comprehensive unit and integration tests - see [agent_docs/test_style.md](agent_docs/test_style.md)
 
+### Pre-Commit Verification Workflow
+
+**CRITICAL**: Before committing any code changes, you MUST complete ALL verification steps from [agent_docs/code_style.md](agent_docs/code_style.md#verification--validation).
+
+#### Always (for any code changes):
+
+1. **Verify code formatting**: `gofmt -d .` (should have no output)
+2. **Modernize code**: `modernize -fix ./...`
+3. **Run linter**: `golangci-lint run`
+4. **Run related tests**: `go test` (for affected packages)
+
+#### Before committing:
+
+1. **Run static analysis**: `go vet ./...`
+2. **Run full test suite**: `go test ./...`
+3. **Check for race conditions**: `go test -race ./...`
+4. **Test with actual PostgreSQL** (when applicable)
+5. **Verify hash chain integrity** (when applicable)
+
+**Important Notes:**
+
+- Do NOT skip these steps even if changes seem trivial
+- Fix ALL issues found during verification before committing
+- If `modernize -fix` makes changes, stage and include them in your commit
+- If `gofmt` makes changes, stage and include them in your commit
+- All verification steps must pass with zero errors/warnings
+- Document any verification steps that were skipped and why (e.g., PostgreSQL not available in current environment)
+
+**Example Workflow:**
+
+```bash
+# 1. Make code changes
+# 2. Run Always checks
+gofmt -w .
+modernize -fix ./...
+golangci-lint run
+go test ./pkg/mypackage
+
+# 3. Run Before committing checks
+go vet ./...
+go test ./...
+go test -race ./...
+
+# 4. Stage all changes (including formatting/modernize fixes)
+git add .
+
+# 5. Commit
+git commit -m "your message"
+```
+
+This workflow ensures code quality and consistency across all commits.
+
 ## 1.5 Core Concepts
 
 | Concept | Description |
