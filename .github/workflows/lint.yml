@@ -60,11 +60,11 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
+      - name: Generate mocks
+        run: make mockgen
+
       - name: Run tests
-        run: go test ./...
+        run: make test
 
-      - name: Run tests with race detector
-        run: go test -v -race -coverprofile=coverage.out ./...
-
-      - name: Check test coverage
-        run: go tool cover -func=coverage.out
+      - name: Run tests with race detector and coverage
+        run: make test-ci

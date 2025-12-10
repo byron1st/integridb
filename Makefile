@@ -1,4 +1,4 @@
-.PHONY: mockgen test lint clean help
+.PHONY: mockgen test lint clean help test-race test-coverage test-ci
 
 # Generate mocks for all interfaces
 mockgen:
@@ -22,6 +22,12 @@ test-race:
 test-coverage:
 	@echo "Running tests with coverage..."
 	@go test -coverprofile=coverage.out ./...
+	@go tool cover -func=coverage.out
+
+# Run tests with race detector and coverage (for CI)
+test-ci:
+	@echo "Running CI tests with race detector and coverage..."
+	@go test -v -race -coverprofile=coverage.out ./...
 	@go tool cover -func=coverage.out
 
 # Run linters and static analysis
@@ -49,6 +55,7 @@ help:
 	@echo "  test           - Run tests"
 	@echo "  test-race      - Run tests with race detector"
 	@echo "  test-coverage  - Run tests with coverage report"
+	@echo "  test-ci        - Run tests with race detector and coverage (for CI)"
 	@echo "  lint           - Run linters and static analysis"
 	@echo "  fmt            - Format code"
 	@echo "  clean          - Clean generated files"
