@@ -11,40 +11,11 @@
 
 ## Deferred Cleanup with Error Returns
 
-When using `defer` for cleanup operations that return errors (e.g., `Close()`, `Rollback()`), explicitly handle or ignore the error to satisfy `errcheck` linter.
-
-**Pattern: Explicitly ignore errors in defer**
+When using `defer` for cleanup operations that return errors (e.g., `Close()`, `Rollback()`), explicitly ignore the error to satisfy `errcheck` linter.
 
 ```go
-// GOOD: Explicitly ignore error with anonymous function
 defer func() { _ = rows.Close() }()
 defer func() { _ = tx.Rollback() }()
-
-// BAD: Unchecked error (fails errcheck)
-defer rows.Close()
-defer tx.Rollback()
-```
-
-**Rationale:**
-- `tx.Rollback()` in defer is safe to ignore because:
-  - If `tx.Commit()` succeeds, `Rollback()` is a no-op
-  - If we return early with an error, the rollback succeeds and we're already handling the error
-- `rows.Close()` in defer is safe to ignore because:
-  - We check `rows.Err()` for iteration errors
-  - Close errors are typically not actionable in defer context
-  - The connection pool handles cleanup
-
-**When to check errors:**
-- For critical cleanup where failure needs logging or handling
-- Use a named return value or closure that can handle the error properly
-
-```go
-// Example: Check and log defer errors when critical
-defer func() {
-    if err := rows.Close(); err != nil {
-        log.Printf("failed to close rows: %v", err)
-    }
-}()
 ```
 
 # Linting and Formatting
