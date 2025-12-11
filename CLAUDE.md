@@ -49,6 +49,8 @@ When writing code or tests for this project:
 - **Code Style**: Follow Go conventions and project standards - see [agent_docs/code_style.md](agent_docs/code_style.md)
 - **Testing**: Write comprehensive unit and integration tests - see [agent_docs/test_style.md](agent_docs/test_style.md)
 
+In addition, always use context7 when code generation, setup or configuration steps, or library/API documentation are needed. This means you should automatically use the Context7 MCP tools to resolve library id and get library docs without me having to explicitly ask.
+
 ### Pre-Commit Verification Workflow
 
 **CRITICAL**: Before committing any code changes, you MUST complete ALL verification steps from [agent_docs/code_style.md](agent_docs/code_style.md#verification--validation).
