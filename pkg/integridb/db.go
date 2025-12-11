@@ -70,6 +70,31 @@ func Open(config *Config) (*DB, error) {
 		colCache: newColumnCache(),
 	}
 
+	// Load tracked tables from database if schema is already migrated
+	// This allows tracked tables to persist across application restarts
+	ctx := context.Background()
+	if tables, err := adapter.GetTrackedTables(ctx); err == nil && len(tables) > 0 {
+		// Merge database tracked tables with config
+		for _, t := range tables {
+			found := false
+			for i, tc := range integriDB.config.TrackedTables {
+				if tc.Name == t.TableName {
+					// Update primary key from database
+					integriDB.config.TrackedTables[i].PrimaryKey = t.PrimaryKeyColumns
+					found = true
+					break
+				}
+			}
+			if !found {
+				// Add table from database if not in config
+				integriDB.config.TrackedTables = append(integriDB.config.TrackedTables, TableConfig{
+					Name:       t.TableName,
+					PrimaryKey: t.PrimaryKeyColumns,
+				})
+			}
+		}
+	}
+
 	return integriDB, nil
 }
 
@@ -189,9 +214,8 @@ func (d *DB) Begin() (*Tx, error) {
 	}
 
 	return &Tx{
-		tx:            tx,
-		db:            d,
-		pendingEvents: make([]*Event, 0),
+		tx: tx,
+		db: d,
 	}, nil
 }
 
@@ -204,10 +228,9 @@ func (d *DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) {
 	}
 
 	return &Tx{
-		tx:            tx,
-		db:            d,
-		ctx:           ctx,
-		pendingEvents: make([]*Event, 0),
+		tx:  tx,
+		db:  d,
+		ctx: ctx,
 	}, nil
 }
 
@@ -237,6 +260,89 @@ func (d *DB) Config() *Config {
 	return d.config
 }
 
+// TrackTable starts tracking a table for event capture.
+// The table must have a primary key specified.
+// This operation is idempotent - tracking an already-tracked table updates its configuration.
+func (d *DB) TrackTable(ctx context.Context, tableName string, primaryKey []string) error {
+	if tableName == "" {
+		return fmt.Errorf("table name cannot be empty")
+	}
+	if len(primaryKey) == 0 {
+		return fmt.Errorf("primary key columns cannot be empty")
+	}
+
+	// Register the table in the database
+	if err := d.adapter.RegisterTrackedTable(ctx, tableName, primaryKey); err != nil {
+		return fmt.Errorf("register tracked table: %w", err)
+	}
+
+	// Update in-memory configuration
+	// Check if table is already tracked
+	for i, tc := range d.config.TrackedTables {
+		if tc.Name == tableName {
+			// Update existing configuration
+			d.config.TrackedTables[i].PrimaryKey = primaryKey
+			return nil
+		}
+	}
+
+	// Add new table to configuration
+	d.config.TrackedTables = append(d.config.TrackedTables, TableConfig{
+		Name:       tableName,
+		PrimaryKey: primaryKey,
+	})
+
+	return nil
+}
+
+// UntrackTable stops tracking a table for event capture.
+// This operation is idempotent - untracking an untracked table is a no-op.
+// Note: This does not delete existing events for the table.
+func (d *DB) UntrackTable(ctx context.Context, tableName string) error {
+	if tableName == "" {
+		return fmt.Errorf("table name cannot be empty")
+	}
+
+	// Unregister the table from the database
+	if err := d.adapter.UnregisterTrackedTable(ctx, tableName); err != nil {
+		return fmt.Errorf("unregister tracked table: %w", err)
+	}
+
+	// Update in-memory configuration
+	for i, tc := range d.config.TrackedTables {
+		if tc.Name == tableName {
+			// Remove from slice
+			d.config.TrackedTables = append(d.config.TrackedTables[:i], d.config.TrackedTables[i+1:]...)
+			break
+		}
+	}
+
+	return nil
+}
+
+// ListTrackedTables returns the list of currently tracked tables.
+func (d *DB) ListTrackedTables(ctx context.Context) ([]TableConfig, error) {
+	tables, err := d.adapter.GetTrackedTables(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get tracked tables: %w", err)
+	}
+
+	result := make([]TableConfig, len(tables))
+	for i, t := range tables {
+		result[i] = TableConfig{
+			Name:       t.TableName,
+			PrimaryKey: t.PrimaryKeyColumns,
+		}
+	}
+
+	return result, nil
+}
+
+// IsTracked checks if a table is currently being tracked.
+func (d *DB) IsTracked(tableName string) bool {
+	return d.config.FindTableConfig(tableName) != nil
+}
+
 // execInsert handles INSERT operations with event capture.
 func (d *DB) execInsert(ctx context.Context, parsedQuery *query.ParsedQuery, tableConfig *TableConfig, queryStr string, args ...any) (sql.Result, error) {
 	// Execute the INSERT statement
@@ -261,11 +367,8 @@ func (d *DB) execInsert(ctx context.Context, parsedQuery *query.ParsedQuery, tab
 		return nil, fmt.Errorf("capture after state: %w", err)
 	}
 
-	// Extract metadata from context if configured
-	var metadata map[string]any
-	if d.config.MetadataFunc != nil {
-		metadata = d.config.MetadataFunc(ctx)
-	}
+	// Extract metadata from context and MetadataFunc
+	metadata := d.extractMetadata(ctx)
 
 	// Create event payload
 	payload := event.EventPayload{
@@ -317,11 +420,8 @@ func (d *DB) execUpdate(ctx context.Context, parsedQuery *query.ParsedQuery, tab
 		// Detect changed columns
 		changedCols := detectChangedColumns(beforeStates[rowID], afterState)
 
-		// Extract metadata from context if configured
-		var metadata map[string]any
-		if d.config.MetadataFunc != nil {
-			metadata = d.config.MetadataFunc(ctx)
-		}
+		// Extract metadata from context and MetadataFunc
+		metadata := d.extractMetadata(ctx)
 
 		// Create event payload
 		payload := event.EventPayload{
@@ -366,11 +466,8 @@ func (d *DB) execDelete(ctx context.Context, parsedQuery *query.ParsedQuery, tab
 
 	// Create events for all deleted rows
 	for _, rowID := range affectedRowIDs {
-		// Extract metadata from context if configured
-		var metadata map[string]any
-		if d.config.MetadataFunc != nil {
-			metadata = d.config.MetadataFunc(ctx)
-		}
+		// Extract metadata from context and MetadataFunc
+		metadata := d.extractMetadata(ctx)
 
 		// Create event payload
 		payload := event.EventPayload{

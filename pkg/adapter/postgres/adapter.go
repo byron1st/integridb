@@ -251,6 +251,14 @@ func scanEvent(s scanner) (*event.Event, error) {
 	return &ev, nil
 }
 
+// TrackedTableInfo contains metadata about a tracked table.
+type TrackedTableInfo struct {
+	TableName         string
+	PrimaryKeyColumns []string
+	LastEventID       *string
+	LastEventAt       *time.Time
+}
+
 // RegisterTrackedTable records a table in the tracked tables registry.
 func (a *PostgresAdapter) RegisterTrackedTable(ctx context.Context, tableName string, primaryKey []string) error {
 	const insertSQL = `
@@ -266,6 +274,91 @@ func (a *PostgresAdapter) RegisterTrackedTable(ctx context.Context, tableName st
 	}
 
 	return nil
+}
+
+// UnregisterTrackedTable removes a table from the tracked tables registry.
+func (a *PostgresAdapter) UnregisterTrackedTable(ctx context.Context, tableName string) error {
+	const deleteSQL = `
+		DELETE FROM integridb_tracked_tables
+		WHERE table_name = $1
+	`
+
+	_, err := a.db.ExecContext(ctx, deleteSQL, tableName)
+	if err != nil {
+		return fmt.Errorf("unregister tracked table: %w", err)
+	}
+
+	return nil
+}
+
+// GetTrackedTables retrieves all tracked tables from the registry.
+func (a *PostgresAdapter) GetTrackedTables(ctx context.Context) ([]TrackedTableInfo, error) {
+	const querySQL = `
+		SELECT table_name, primary_key_columns, last_event_id, last_event_at
+		FROM integridb_tracked_tables
+		ORDER BY table_name
+	`
+
+	rows, err := a.db.QueryContext(ctx, querySQL)
+	if err != nil {
+		return nil, fmt.Errorf("query tracked tables: %w", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	var tables []TrackedTableInfo
+	for rows.Next() {
+		var table TrackedTableInfo
+		var pkCols []string
+
+		err := rows.Scan(
+			&table.TableName,
+			pq.Array(&pkCols),
+			&table.LastEventID,
+			&table.LastEventAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("scan tracked table: %w", err)
+		}
+
+		table.PrimaryKeyColumns = pkCols
+		tables = append(tables, table)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate tracked tables: %w", err)
+	}
+
+	return tables, nil
+}
+
+// GetTrackedTable retrieves a specific tracked table from the registry.
+func (a *PostgresAdapter) GetTrackedTable(ctx context.Context, tableName string) (*TrackedTableInfo, error) {
+	const querySQL = `
+		SELECT table_name, primary_key_columns, last_event_id, last_event_at
+		FROM integridb_tracked_tables
+		WHERE table_name = $1
+	`
+
+	row := a.db.QueryRowContext(ctx, querySQL, tableName)
+
+	var table TrackedTableInfo
+	var pkCols []string
+
+	err := row.Scan(
+		&table.TableName,
+		pq.Array(&pkCols),
+		&table.LastEventID,
+		&table.LastEventAt,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil // Table not tracked
+		}
+		return nil, fmt.Errorf("query tracked table: %w", err)
+	}
+
+	table.PrimaryKeyColumns = pkCols
+	return &table, nil
 }
 
 // UpdateLastEvent updates the last event information for a tracked table.
