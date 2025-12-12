@@ -34,6 +34,7 @@ test-ci:
 lint:
 	@echo "Running linters..."
 	@gofmt -d .
+	@go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest ./...
 	@go vet ./...
 	@golangci-lint run
 
@@ -41,6 +42,11 @@ lint:
 fmt:
 	@echo "Formatting code..."
 	@gofmt -w .
+
+# Modernize code
+modernize:
+	@echo "Modernizing code..."
+	@go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -fix ./...
 
 # Clean generated files
 clean:

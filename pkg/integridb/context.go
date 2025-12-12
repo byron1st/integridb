@@ -1,5 +1,7 @@
 package integridb
 
+import "maps"
+
 import "context"
 
 // metadataKey is the context key type for metadata injection.
@@ -47,9 +49,7 @@ func (d *DB) extractMetadata(ctx context.Context) map[string]any {
 		funcMetadata := d.config.MetadataFunc(ctx)
 		if funcMetadata != nil {
 			result = make(map[string]any, len(funcMetadata))
-			for k, v := range funcMetadata {
-				result[k] = v
-			}
+			maps.Copy(result, funcMetadata)
 		}
 	}
 
@@ -59,9 +59,7 @@ func (d *DB) extractMetadata(ctx context.Context) map[string]any {
 		if result == nil {
 			result = make(map[string]any, len(ctxMetadata))
 		}
-		for k, v := range ctxMetadata {
-			result[k] = v
-		}
+		maps.Copy(result, ctxMetadata)
 	}
 
 	return result
