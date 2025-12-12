@@ -53,7 +53,13 @@ In addition, always use context7 when code generation, setup or configuration st
 
 ### Pre-Commit Verification Workflow
 
-**CRITICAL**: Before committing any code changes, you MUST complete ALL verification steps from [agent_docs/code_style.md](agent_docs/code_style.md#verification--validation).
+**Always follow these steps before committing code changes:**
+
+- Always run `make lint`
+- If there is an error from `gofmt`, run `make fmt` to fix it.
+- If there is an error from `modernize`, run `make modernize` to fix it.
+- Always run `make test`
+- Always run `make test-race`
 
 ### Makefile Targets
 
@@ -66,8 +72,9 @@ This project uses a Makefile to provide consistent commands for common developme
 | `make test-race` | Run tests with race detector | Check for race conditions, slower than regular tests |
 | `make test-coverage` | Run tests with coverage report | Check test coverage, see which code is tested |
 | `make test-ci` | Run tests with race detector and coverage | CI/CD pipeline, comprehensive testing before commits |
-| `make lint` | Run all linters (gofmt, go vet, golangci-lint) | Verify code quality and style compliance |
+| `make lint` | Run all linters (gofmt, go vet, modernize, golangci-lint) | Verify code quality and style compliance |
 | `make fmt` | Format all Go code | Fix formatting issues before committing |
+| `make modernize` | Modernize all Go code | Fix old-style code before committing |
 | `make clean` | Remove generated files (mocks, coverage) | Clean workspace, troubleshoot build issues |
 | `make help` | Show available targets | List all available Makefile commands |
 
